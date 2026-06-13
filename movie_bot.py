@@ -30,8 +30,15 @@ from telegram.ext import (
 # Read credentials from environment variables (for security)
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8781315448:AAGIUHbCrN2J_22PND6_6wndF8yqrjwiPKo")
 TMDB_API_KEY = os.getenv("TMDB_API_KEY", "c77cce7316558fb9e7f20586031e9b99")
-CHANNEL_ID = os.getenv("CHANNEL_ID", "@Adobopusit2")
+CHANNEL_ID = os.getenv("CHANNEL_ID", "1004494322371")  # Default to numeric ID
 
+# Normalize numeric channel IDs (allow plain numeric ID from env or default)
+try:
+    # if CHANNEL_ID is a numeric string, convert to int for telegram API
+    if isinstance(CHANNEL_ID, str) and CHANNEL_ID.isdigit():
+        CHANNEL_ID = int(CHANNEL_ID)
+except Exception:
+    pass
 if not BOT_TOKEN or not TMDB_API_KEY:
     raise ValueError("❌ Missing required environment variables: BOT_TOKEN and TMDB_API_KEY")
 
