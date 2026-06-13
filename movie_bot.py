@@ -374,6 +374,12 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "preview_message_id": preview.message_id
     }
 
+async def _edit_preview_message(query, text, parse_mode="HTML"):
+    if query.message.photo:
+        await query.edit_message_caption(caption=text, parse_mode=parse_mode)
+    else:
+        await query.edit_message_text(text=text, parse_mode=parse_mode)
+
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle button presses"""
     query = update.callback_query
@@ -384,7 +390,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data == "send":
         pending = context.user_data.get("pending_movie")
         if not pending:
-            await query.edit_message_text("❌ Session expired. Upload again.")
+            await _edit_preview_message(query, "❌ Session expired. Upload again.")
             return
         
         try:
@@ -408,24 +414,25 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 message_id=pending["message_id"]
             )
             
-            await query.edit_message_text(
-                "✅ <b>Posted to channel successfully!</b>",
-                parse_mode="HTML"
+            await _edit_preview_message(
+                query,
+                "✅ <b>Posted to channel successfully!</b>"
             )
             
         except Exception as e:
             logger.error(f"Send error: {e}")
-            await query.edit_message_text(
+            await _edit_preview_message(
+                query,
                 f"❌ Error posting to channel:\n<code>{str(e)}</code>\n\n"
-                f"Make sure the bot is admin in {CHANNEL_ID} and can post messages.",
-                parse_mode="HTML"
+                f"Make sure the bot is admin in {CHANNEL_ID} and can post messages."
             )
     
     elif data == "retry":
-        await query.edit_message_text("🔄 Send the movie file again or use /manual")
+        await _edit_preview_message(query, "🔄 Send the movie file again or use /manual")
     
     elif data == "edit":
-        await query.edit_message_text(
+        await _edit_preview_message(
+            query,
             "✏️ <b>Edit Mode</b>\n"
             "Reply to the movie message with:\n"
             "<code>/caption Your new caption here</code>",
@@ -433,7 +440,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     
     elif data == "skip":
-        await query.edit_message_text("⏭ Skipped. Upload again when ready.")
+        await _edit_preview_message(query, "⏭ Skipped. Upload again when ready.")
 
 async def custom_caption(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle custom caption"""
